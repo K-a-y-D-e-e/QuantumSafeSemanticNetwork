@@ -1,0 +1,25 @@
+C:\Karmadeept\Black Book Project
+
+│
+├── .github
+├── .vscode
+├── configs
+├── crypto
+├── datasets
+├── docs
+├── evaluation
+├── logs
+├── network
+├── notebooks
+├── outputs
+├── rl
+├── ai
+├── scripts
+├── semantic
+├── tests
+│
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── main.py
+└── .gitignore
