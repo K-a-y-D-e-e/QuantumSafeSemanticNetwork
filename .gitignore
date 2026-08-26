@@ -1,0 +1,31 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE / editor files
+.vscode/
+.idea/
+
+# Cryptographic private material
+crypto/keys/
+crypto/certificates/
+
+# Generated evaluation output
+evaluation/results/
+evaluation/plots/
+
+# Logs
+network/logs/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Environment / secrets
+.env
+*.env
