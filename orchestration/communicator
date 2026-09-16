@@ -1,0 +1,36 @@
+from agent import AIOrchestrationAgent
+
+
+class CommunicationController:
+
+    def __init__(self, rl_agent):
+
+        self.orchestrator = AIOrchestrationAgent()
+        self.rl_agent = rl_agent
+
+    def select_compression(self, state):
+
+        task_criticality = state[0]
+        network_load = state[2]
+        latency = state[3]
+        security_requirement = 1.0
+
+        objective = self.orchestrator.decide_objective(
+            task_criticality,
+            network_load,
+            latency,
+            security_requirement
+        )
+
+        action = self.rl_agent.predict(state)
+
+        compression_levels = [
+            0.25,
+            0.50,
+            0.75,
+            1.00
+        ]
+
+        compression = compression_levels[action]
+
+        return objective, compression
