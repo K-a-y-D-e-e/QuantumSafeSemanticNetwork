@@ -1,28 +1,48 @@
+from pathlib import Path
+from typing import Optional, Union
+
 from stable_baselines3 import PPO
 
 
-class RLAgent:
+DEFAULT_PPO_CHECKPOINT = "rl/checkpoints/ppo_semantic_agent"
 
-    def __init__(self, environment):
+
+class RLAgent:
+    """
+    Stable-Baselines3 PPO wrapper for semantic compression control.
+    """
+
+    def __init__(
+        self,
+        environment,
+        seed: int = 42,
+        learning_rate: float = 3e-4,
+        verbose: int = 1,
+    ):
+        self.seed = seed
         self.model = PPO(
             "MlpPolicy",
             environment,
-            verbose=1
+            verbose=verbose,
+            seed=seed,
+            learning_rate=learning_rate,
         )
 
-    def train(self, timesteps=10000):
+    def train(self, timesteps: int = 10000):
         self.model.learn(total_timesteps=timesteps)
 
-    def predict(self, state):
-        action, _ = self.model.predict(
-            state,
-            deterministic=True
-        )
-
+    def predict(self, state, deterministic: bool = True) -> int:
+        action, _ = self.model.predict(state, deterministic=deterministic)
         return int(action)
 
-    def save(self, path="rl/ppo_semantic_agent"):
-        self.model.save(path)
+    def save(self, path: str = DEFAULT_PPO_CHECKPOINT):
+        checkpoint = Path(path)
+        checkpoint.parent.mkdir(parents=True, exist_ok=True)
+        self.model.save(str(checkpoint))
 
-    def load(self, path="rl/ppo_semantic_agent"):
-        self.model = PPO.load(path)
+    def load(
+        self,
+        path: str = DEFAULT_PPO_CHECKPOINT,
+        environment=None,
+    ):
+        self.model = PPO.load(path, env=environment)
