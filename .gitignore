@@ -29,3 +29,6 @@ Thumbs.db
 # Environment / secrets
 .env
 *.env
+
+# Pytest cache
+.pytest_cache/

@@ -1,0 +1,90 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# RL Configuration for NetworkSchedulingEnv + DQN
+# QuantumSafeSemanticNetwork — Phase 3
+#
+# Usage:
+#   python rl/train.py                        # full training run
+#   python rl/train.py --smoke                # 10-episode smoke test
+#   python rl/evaluate.py --model rl/checkpoints/dqn_best.pt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────
+# Reproducibility
+# ─────────────────────────────────────────────
+seed: 42          # training seed (traffic + DQN initialisation)
+eval_seed: 999    # separate evaluation seed (unseen workloads)
+
+# ─────────────────────────────────────────────
+# Training
+# ─────────────────────────────────────────────
+num_episodes: 500    # full training run episode count
+
+# ─────────────────────────────────────────────
+# DQN Hyperparameters
+# ─────────────────────────────────────────────
+learning_rate: 0.001
+gamma: 0.99              # discount factor
+epsilon_start: 1.0       # initial exploration rate
+epsilon_min: 0.05        # minimum exploration rate
+epsilon_decay: 0.995     # multiplicative decay per episode
+buffer_size: 10000       # replay buffer capacity (transitions)
+batch_size: 64           # mini-batch size for each gradient step
+target_update_freq: 50   # hard target-network update every N gradient steps
+hidden_size: 128         # neurons per hidden layer (Q-network has 2 hidden layers)
+
+# ─────────────────────────────────────────────
+# Reward Weights
+# ─────────────────────────────────────────────
+reward:
+  # Positive component: awarded when packet meets its deadline
+  w_deadline: 2.0
+  # Negative component: penalises normalised end-to-end latency
+  w_latency: 1.0
+  # Negative component: penalises normalised queueing delay
+  w_queue: 0.5
+  # Additional penalty multiplied by -1 on deadline miss
+  w_miss: 3.0
+  # One-off penalty applied when an out-of-range action bypasses masking
+  mask_violation_penalty: -5.0
+
+# ─────────────────────────────────────────────
+# Normalisation Constants (for observation)
+# ─────────────────────────────────────────────
+normalisation:
+  max_deadline_us: 20000.0        # 20 ms in µs
+  max_size_bytes: 2000.0
+  max_wait_us: 10000.0
+  max_expected_latency_us: 15000.0
+  episode_max_time_us: 50000.0
+
+# ─────────────────────────────────────────────
+# Network Parameters
+# ─────────────────────────────────────────────
+network:
+  bandwidth_mbps: 10
+  propagation_delay_us: 100
+
+# ─────────────────────────────────────────────
+# Traffic / Workload Parameters
+# ─────────────────────────────────────────────
+traffic:
+  num_flows: 10
+  min_size_bytes: 500
+  max_size_bytes: 2000
+  min_deadline_ms: 2
+  max_deadline_ms: 15
+  max_arrival_spread_us: 1000
+
+# ─────────────────────────────────────────────
+# Evaluation
+# ─────────────────────────────────────────────
+eval:
+  num_episodes: 100    # number of evaluation episodes for comparison
+
+# ─────────────────────────────────────────────
+# Logging / Checkpointing
+# ─────────────────────────────────────────────
+checkpoint_dir: rl/checkpoints
+log_dir: rl/logs
+results_dir: rl/results
+checkpoint_interval: 100    # save checkpoint every N episodes
