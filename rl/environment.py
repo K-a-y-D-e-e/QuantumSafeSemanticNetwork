@@ -8,7 +8,7 @@ SemanticCompressionEnv  (original, Phase 2)
 Models adaptive semantic compression level selection.
 Action:  choose compression ratio — 25 / 50 / 75 / 100 %.
 Purpose: research into bandwidth–quality trade-off under network load.
-Status:  preserved exactly as originally implemented.
+Status:  retains the original analytic mode and adds an optional reconstruction-based mode.
 
 NetworkSchedulingEnv  (Phase 3)
 --------------------------------
@@ -25,7 +25,18 @@ NOT modified or affected by the addition of the scheduling environment.
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from typing import Any, Dict, List, Optional
+import torch
+from typing import Any, Dict, List, Optional, Sequence, Union
+
+
+# Public compression mapping preserved for all callers.
+SEMANTIC_COMPRESSION_LEVELS = [0.25, 0.50, 0.75, 1.00]
+ACTION_TO_COMPRESSION = {
+    0: 0.25,
+    1: 0.50,
+    2: 0.75,
+    3: 1.00,
+}
 
 
 # =============================================================================
@@ -35,111 +46,359 @@ from typing import Any, Dict, List, Optional
 
 class SemanticCompressionEnv(gym.Env):
     """
-    Original semantic compression environment.
+    Semantic compression environment for PPO policy learning.
 
-    State
-    -----
+    State (shape=(7,))
+    -------------------
     [task_criticality, bandwidth, network_load, latency,
      packet_loss, deadline, semantic_quality]
 
     Actions
     -------
-    0 = 25 %  compression
-    1 = 50 %  compression
-    2 = 75 %  compression
-    3 = 100 % compression
+    0 = 25 % retained latent dimensions
+    1 = 50 %
+    2 = 75 %
+    3 = 100 %
+
+    Default mode (``use_reconstruction_reward=False``)
+    --------------------------------------------------
+    Preserves the original analytic reward model for backward compatibility.
+
+    Extended mode (``use_reconstruction_reward=True``)
+    --------------------------------------------------
+    Uses trained encoder/decoder checkpoints and AdaptiveSemanticCompressor
+    to compute reconstruction MSE on JIGSAWS kinematic samples. Reward is
+    shaped by a rule-based orchestration objective (not learned).
     """
 
-    def __init__(self):
-        super().__init__()
+    metadata = {"render_modes": []}
 
-        # State:
-        # [task_criticality,
-        #  bandwidth,
-        #  network_load,
-        #  latency,
-        #  packet_loss,
-        #  deadline,
-        #  semantic_quality]
+    def __init__(
+        self,
+        encoder=None,
+        decoder=None,
+        compressor=None,
+        kinematics_samples: Optional[Sequence[torch.Tensor]] = None,
+        orchestrator=None,
+        device: Union[str, torch.device] = "cpu",
+        use_reconstruction_reward: bool = False,
+        default_objective: str = "BALANCED",
+        invalid_action_penalty: float = -0.25,
+    ):
+        super().__init__()
 
         self.observation_space = spaces.Box(
             low=0.0,
             high=1.0,
             shape=(7,),
-            dtype=np.float32
+            dtype=np.float32,
         )
-
-        # Actions:
-        # 0 = 25%
-        # 1 = 50%
-        # 2 = 75%
-        # 3 = 100%
-
         self.action_space = spaces.Discrete(4)
 
+        self.encoder = encoder
+        self.decoder = decoder
+        self.compressor = compressor
+        self.kinematics_samples = kinematics_samples
+        self.orchestrator = orchestrator
+        self.device = torch.device(device)
+        self.use_reconstruction_reward = use_reconstruction_reward
+        self.default_objective = default_objective
+        self.invalid_action_penalty = invalid_action_penalty
+
         self.state = None
+        self._rng = np.random.default_rng()
+        self._sample_index = 0
+        self._current_objective = default_objective
+        self._last_info: Dict[str, Any] = {}
+
+        if self.use_reconstruction_reward:
+            missing_components = []
+            if self.encoder is None:
+                missing_components.append("encoder")
+            if self.decoder is None:
+                missing_components.append("decoder")
+            if self.compressor is None:
+                missing_components.append("compressor")
+            if missing_components:
+                raise ValueError(
+                    "The following components are required when "
+                    "use_reconstruction_reward=True: "
+                    + ", ".join(missing_components)
+                )
+
+            if (
+                self.kinematics_samples is None
+                or len(self.kinematics_samples) == 0
+            ):
+                raise ValueError(
+                    "kinematics_samples must contain at least one sample "
+                    "when use_reconstruction_reward=True"
+                )
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        self.state = np.array([
-            0.8,  # task criticality
-            0.7,  # bandwidth
-            0.3,  # network load
-            0.2,  # latency
-            0.05, # packet loss
-            0.9,  # deadline requirement
-            0.8   # semantic quality
-        ], dtype=np.float32)
+        if seed is not None:
+            self._rng = np.random.default_rng(seed)
 
-        return self.state, {}
+        options = options or {}
+
+        if self.use_reconstruction_reward:
+            if "state_vector" in options:
+                self.state = np.asarray(
+                    options["state_vector"],
+                    dtype=np.float32,
+                )
+            else:
+                self.state = self._rng.uniform(0.0, 1.0, size=(7,)).astype(
+                    np.float32
+                )
+
+            if "sample_index" in options:
+                sample_index = int(options["sample_index"])
+                if (
+                    self.kinematics_samples is None
+                    or len(self.kinematics_samples) == 0
+                ):
+                    raise ValueError(
+                        "sample_index requires kinematics_samples to be set"
+                    )
+                if not 0 <= sample_index < len(self.kinematics_samples):
+                    raise IndexError(
+                        f"sample_index {sample_index} out of range for "
+                        f"{len(self.kinematics_samples)} samples"
+                    )
+                self._sample_index = sample_index
+            elif (
+                self.kinematics_samples is not None
+                and len(self.kinematics_samples) > 0
+            ):
+                self._sample_index = int(
+                    self._rng.integers(0, len(self.kinematics_samples))
+                )
+
+            self._current_objective = options.get(
+                "objective",
+                self._decide_objective_from_state(self.state),
+            )
+        else:
+            # Original fixed default state — preserved for compatibility tests.
+            self.state = np.array([
+                0.8,
+                0.7,
+                0.3,
+                0.2,
+                0.05,
+                0.9,
+                0.8,
+            ], dtype=np.float32)
+            self._current_objective = options.get(
+                "objective",
+                self.default_objective,
+            )
+
+        self._last_info = {
+            "objective": self._current_objective,
+            "sample_index": self._sample_index,
+        }
+        return self.state.copy(), dict(self._last_info)
 
     def step(self, action):
+        raw_action = int(action)
+        action = int(np.clip(raw_action, 0, 3))
+        invalid_action = raw_action != action
 
-        compression_levels = [
-            0.25,
-            0.50,
-            0.75,
-            1.00
-        ]
+        compression = ACTION_TO_COMPRESSION[action]
 
-        compression = compression_levels[action]
+        task_criticality = float(self.state[0])
+        bandwidth = float(self.state[1])
+        network_load = float(self.state[2])
+        latency = float(self.state[3])
+        packet_loss = float(self.state[4])
+        deadline = float(self.state[5])
 
-        task_criticality = self.state[0]
-        network_load = self.state[2]
-        latency = self.state[3]
+        if self.use_reconstruction_reward:
+            reward, info = self._step_with_reconstruction(
+                action=action,
+                compression=compression,
+                task_criticality=task_criticality,
+                bandwidth=bandwidth,
+                network_load=network_load,
+                latency=latency,
+                packet_loss=packet_loss,
+                deadline=deadline,
+            )
+        else:
+            reward, info = self._step_analytic(
+                compression=compression,
+                task_criticality=task_criticality,
+                network_load=network_load,
+                latency=latency,
+            )
 
-        # Higher compression level → better semantic quality
+        if invalid_action:
+            reward += self.invalid_action_penalty
+            info["invalid_action"] = True
+            info["raw_action"] = raw_action
+        else:
+            info["invalid_action"] = False
+
+        info["action"] = action
+        info["compression"] = compression
+        info["objective"] = self._current_objective
+
+        terminated = False
+        truncated = False
+
+        self._last_info = info
+        return self.state.copy(), float(reward), terminated, truncated, info
+
+    def _decide_objective_from_state(self, state):
+        if self.orchestrator is None:
+            return self.default_objective
+
+        return self.orchestrator.decide_objective(
+            float(state[0]),
+            float(state[2]),
+            float(state[3]),
+            float(state[5]),
+        )
+
+    def _get_reward_weights(self):
+        if self.orchestrator is not None:
+            return self.orchestrator.get_reward_weights(self._current_objective)
+
+        # Fallback weights when no orchestrator is attached.
+        return {
+            "quality": 1.0,
+            "latency": 1.0,
+            "bandwidth": 1.0,
+            "deadline": 1.0,
+            "criticality": 1.0,
+        }
+
+    def _step_analytic(
+        self,
+        compression,
+        task_criticality,
+        network_load,
+        latency,
+    ):
+        """
+        Original analytic reward preserved for backward compatibility.
+        """
         semantic_quality = compression
-
-        # Higher compression → larger packet
         bandwidth_cost = compression
 
-        # Simple latency model
         estimated_latency = (
             latency
             + 0.3 * bandwidth_cost
             + 0.2 * network_load
         )
 
-        # Reward
         reward = (
             semantic_quality
             - 0.5 * estimated_latency
             - 0.3 * bandwidth_cost
         )
 
-        # Penalize poor quality when task is critical
         if task_criticality > 0.7 and semantic_quality < 0.75:
             reward -= 0.5
 
         self.state[3] = min(1.0, estimated_latency)
         self.state[6] = semantic_quality
 
-        terminated = False
-        truncated = False
+        info = {
+            "semantic_quality": semantic_quality,
+            "estimated_latency": float(self.state[3]),
+            "bandwidth_cost": bandwidth_cost,
+            "reconstruction_mse": None,
+        }
+        return reward, info
 
-        return self.state, reward, terminated, truncated, {}
+    def _step_with_reconstruction(
+        self,
+        action,
+        compression,
+        task_criticality,
+        bandwidth,
+        network_load,
+        latency,
+        packet_loss,
+        deadline,
+    ):
+        """
+        Reward based on actual encoder/decoder reconstruction error.
+
+        Assumptions (documented, not claimed optimal):
+        - Each step evaluates one kinematic sequence sample.
+        - Quality term uses ``1 / (1 + mse)`` clipped to [0, 1].
+        - Bandwidth/latency scale with retained latent fraction.
+        - Packet loss adds a small reliability penalty.
+        - Deadline and task criticality add context-sensitive penalties.
+        - Orchestration objective scales component weights only; it is not
+          part of the observation to avoid leaking the optimal action.
+        """
+        weights = self._get_reward_weights()
+
+        sample = self.kinematics_samples[self._sample_index].to(self.device)
+        with torch.no_grad():
+            latent = self.encoder(sample)
+            compressed, indices = self.compressor.compress(latent, compression)
+            reconstructed_latent = self.compressor.decompress(
+                compressed,
+                indices,
+            )
+            reconstruction = self.decoder(reconstructed_latent)
+            mse = torch.mean((reconstruction - sample) ** 2).item()
+
+        semantic_quality = float(np.clip(1.0 / (1.0 + mse), 0.0, 1.0))
+        bandwidth_cost = compression
+        keep_dim = max(1, int(self.compressor.latent_dim * compression))
+
+        # Simple communication/latency proxy: payload size + congestion.
+        estimated_latency = float(
+            np.clip(
+                latency
+                + 0.35 * bandwidth_cost
+                + 0.25 * network_load
+                + 0.10 * packet_loss
+                - 0.10 * bandwidth,
+                0.0,
+                1.0,
+            )
+        )
+
+        deadline_penalty = 0.0
+        if deadline > 0.7 and estimated_latency > deadline:
+            deadline_penalty = estimated_latency - deadline
+
+        criticality_penalty = 0.0
+        if task_criticality > 0.7 and semantic_quality < 0.75:
+            criticality_penalty = 0.75 - semantic_quality
+
+        reward = (
+            weights["quality"] * semantic_quality
+            - weights["latency"] * estimated_latency
+            - weights["bandwidth"] * bandwidth_cost
+            - weights["deadline"] * deadline_penalty
+            - weights["criticality"] * criticality_penalty
+            - 0.15 * packet_loss
+        )
+
+        self.state[3] = estimated_latency
+        self.state[6] = semantic_quality
+
+        info = {
+            "semantic_quality": semantic_quality,
+            "estimated_latency": estimated_latency,
+            "bandwidth_cost": bandwidth_cost,
+            "reconstruction_mse": mse,
+            "retained_latent_dims": keep_dim,
+            "retained_latent_fraction": compression,
+            "communication_cost": keep_dim / float(self.compressor.latent_dim),
+        }
+        return reward, info
 
 
 # =============================================================================

@@ -1,24 +1,24 @@
+
 import torch
 
 
 class AdaptiveSemanticCompressor:
     """
-    Applies adaptive compression to a semantic latent representation.
-
-    compression_level:
-        0.25 -> retain approximately 25% of latent features
-        0.50 -> retain approximately 50%
-        0.75 -> retain approximately 75%
-        1.00 -> retain all features
+    Compresses semantic latent representations by retaining
+    the most important latent dimensions.
     """
 
-    def __init__(self):
+    def __init__(self, latent_dim=16):
+        self.latent_dim = latent_dim
         self.levels = [0.25, 0.50, 0.75, 1.00]
 
     def compress(self, latent, compression_level):
         """
-        Retain the most important latent dimensions based on
-        average absolute activation.
+        Compress the latent representation.
+
+        Returns:
+            compressed: Selected latent features
+            indices: Positions of selected features
         """
 
         if compression_level not in self.levels:
@@ -27,11 +27,9 @@ class AdaptiveSemanticCompressor:
                 f"{compression_level}"
             )
 
-        latent_dim = latent.shape[-1]
-
         keep_dim = max(
             1,
-            int(latent_dim * compression_level)
+            int(self.latent_dim * compression_level)
         )
 
         importance = torch.mean(
@@ -47,3 +45,23 @@ class AdaptiveSemanticCompressor:
         compressed = latent[..., indices]
 
         return compressed, indices
+
+    def decompress(self, compressed, indices):
+        """
+        Reconstruct the original latent dimension.
+
+        Missing latent features are filled with zeros.
+        """
+
+        full_shape = list(compressed.shape)
+        full_shape[-1] = self.latent_dim
+
+        reconstructed = torch.zeros(
+            full_shape,
+            dtype=compressed.dtype,
+            device=compressed.device
+        )
+
+        reconstructed[..., indices] = compressed
+
+        return reconstructed
