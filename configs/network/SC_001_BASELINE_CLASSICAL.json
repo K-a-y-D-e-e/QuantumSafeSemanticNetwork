@@ -1,0 +1,71 @@
+{
+    "scenario_id": "SC_001_BASELINE_CLASSICAL",
+    "network": {
+        "bandwidth_profile": "10M",
+        "bandwidth_mbps": 10,
+        "latency_profile": "LOW",
+        "latency_ms": 1,
+        "packet_loss_profile": "NONE",
+        "packet_loss_percent": 0,
+        "queue_capacity_packets": 100
+    },
+    "traffic": {
+        "load_profile": "LOW",
+        "load_ratio": 0.2,
+        "offered_load_mbps": 2.0,
+        "packet_size_bytes": 1000,
+        "packet_rate_pps": 250.0,
+        "priority_profile": "HIGH",
+        "deadline_class": "RELAXED",
+        "deadline_ms": 50,
+        "priority_mix": "BALANCED",
+        "high": {
+            "priority": "HIGH",
+            "deadline_class": "TIGHT",
+            "deadline_ms": 10,
+            "load_ratio": 0.5,
+            "load_mbps": 1.0,
+            "packet_rate_pps": 125.0
+        },
+        "normal": {
+            "priority": "NORMAL",
+            "deadline_class": "RELAXED",
+            "deadline_ms": 50,
+            "load_ratio": 0.5,
+            "load_mbps": 1.0,
+            "packet_rate_pps": 125.0
+        },
+        "total_load_mbps": 2.0,
+        "total_packet_rate_pps": 250.0
+    },
+    "crypto": {
+        "profile": "CLASSICAL",
+        "key_exchange": {
+            "algorithm": "X25519",
+            "public_key_bytes": 32,
+            "ciphertext_bytes": 0,
+            "shared_secret_bytes": 32
+        },
+        "authentication": {
+            "algorithm": "Ed25519",
+            "public_key_bytes": 32,
+            "signature_bytes": 64
+        },
+        "bulk_cipher": {
+            "algorithm": "AES-256-GCM",
+            "authentication_tag_bytes": 16
+        },
+        "session_setup_overhead_bytes": 128,
+        "application_data_overhead_bytes": 16,
+        "computational_overhead_us": {
+            "key_exchange": 27.41,
+            "signing": 29.31,
+            "verification": 82.65
+        }
+    },
+    "evaluation": {
+        "random_seed": 42,
+        "simulation_duration_s": 10,
+        "packet_generation_mode": "DETERMINISTIC"
+    }
+}
