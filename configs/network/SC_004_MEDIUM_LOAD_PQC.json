@@ -1,0 +1,71 @@
+{
+    "scenario_id": "SC_004_MEDIUM_LOAD_PQC",
+    "network": {
+        "bandwidth_profile": "25M",
+        "bandwidth_mbps": 25,
+        "latency_profile": "MEDIUM",
+        "latency_ms": 10,
+        "packet_loss_profile": "LOW",
+        "packet_loss_percent": 1,
+        "queue_capacity_packets": 100
+    },
+    "traffic": {
+        "load_profile": "MEDIUM",
+        "load_ratio": 0.5,
+        "offered_load_mbps": 12.5,
+        "packet_size_bytes": 1000,
+        "packet_rate_pps": 1562.5,
+        "priority_profile": "HIGH",
+        "deadline_class": "TIGHT",
+        "deadline_ms": 10,
+        "priority_mix": "BALANCED",
+        "high": {
+            "priority": "HIGH",
+            "deadline_class": "TIGHT",
+            "deadline_ms": 10,
+            "load_ratio": 0.5,
+            "load_mbps": 6.25,
+            "packet_rate_pps": 781.25
+        },
+        "normal": {
+            "priority": "NORMAL",
+            "deadline_class": "RELAXED",
+            "deadline_ms": 50,
+            "load_ratio": 0.5,
+            "load_mbps": 6.25,
+            "packet_rate_pps": 781.25
+        },
+        "total_load_mbps": 12.5,
+        "total_packet_rate_pps": 1562.5
+    },
+    "crypto": {
+        "profile": "PQC",
+        "key_exchange": {
+            "algorithm": "ML-KEM-768",
+            "public_key_bytes": 1184,
+            "ciphertext_bytes": 1088,
+            "shared_secret_bytes": 32
+        },
+        "authentication": {
+            "algorithm": "ML-DSA-65",
+            "public_key_bytes": 1952,
+            "signature_bytes": 3309
+        },
+        "bulk_cipher": {
+            "algorithm": "AES-256-GCM",
+            "authentication_tag_bytes": 16
+        },
+        "session_setup_overhead_bytes": 7533,
+        "application_data_overhead_bytes": 16,
+        "computational_overhead_us": {
+            "key_exchange": 224.15,
+            "signing": 2249.55,
+            "verification": 592.32
+        }
+    },
+    "evaluation": {
+        "random_seed": 42,
+        "simulation_duration_s": 10,
+        "packet_generation_mode": "DETERMINISTIC"
+    }
+}
