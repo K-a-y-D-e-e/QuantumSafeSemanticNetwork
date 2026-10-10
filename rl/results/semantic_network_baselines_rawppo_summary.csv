@@ -1,0 +1,7 @@
+condition,packets,mean_retained_fraction,mean_reconstruction_mse,mean_semantic_quality,mean_packet_bytes,mean_latency_us,mean_queueing_us,deadline_miss_rate,deadline_misses
+Fixed_25pct,1000,0.25,0.825351,0.5706,548.0,2563.17,2024.77,0.083,83
+Fixed_50pct,1000,0.5,0.414852,0.727,1064.0,4833.57,3882.37,0.203,203
+Fixed_75pct,1000,0.75,0.201793,0.8427,1580.0,7103.97,5739.97,0.374,374
+Fixed_100pct,1000,1.0,0.112531,0.9032,2096.0,9374.37,7597.57,0.535,535
+PPO_Raw,1000,0.2935,0.761853,0.5967,637.78,2915.7,2305.47,0.109,109
+PPO_Orchestrated,1000,0.3553,0.6841,0.6294,765.24,3411.88,2699.7,0.131,131

@@ -1,0 +1,5 @@
+objective,samples,selector_matches_expected,action_changed_count,action_changed_rate,mean_raw_action,mean_biased_action,mean_raw_retention,mean_biased_retention,mean_raw_mse,mean_biased_mse,mean_raw_quality,mean_biased_quality
+LATENCY_CRITICAL,25,True,0,0.0,0.8,0.8,0.45,0.45,0.516944,0.516944,0.6842,0.6842
+QUALITY_CRITICAL,25,True,0,0.0,2.0,2.0,0.75,0.75,0.266193,0.266193,0.8031,0.8031
+BANDWIDTH_EFFICIENT,25,True,0,0.0,0.0,0.0,0.25,0.25,0.766216,0.766216,0.5773,0.5773
+BALANCED,25,True,0,0.0,1.28,1.28,0.57,0.57,0.458905,0.458905,0.741,0.741
