@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1680" role="img" aria-labelledby="title desc">
+<title id="title">Quantum-Safe Semantic Communication for Deterministic Tactile Networks — implemented architecture</title>
+<desc id="desc">Architecture overview grounded in the repository. The semantic retention pipeline and independent DQN network scheduling experiment are shown as separate lanes. NS-3 validation, measured post-quantum cryptography overhead, and uncertainty analysis are explicitly marked outside current implementation.</desc>
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#edf3f7"/></linearGradient>
+ <linearGradient id="head" x2="1" y2="1"><stop stop-color="#10263f"/><stop offset="1" stop-color="#173b59"/></linearGradient>
+ <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#18324b" flood-opacity=".09"/></filter>
+ <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1 1L11 6 1 11" fill="none" stroke="#47637a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+ <marker id="arrowTeal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1 1L11 6 1 11" fill="none" stroke="#087f8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+ <style>
+  text{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#18324b}.eyebrow{font-size:15px;font-weight:750;letter-spacing:2.3px;fill:#86d4d1}.title{font-size:37px;font-weight:750;fill:#fff}.subtitle{font-size:18px;fill:#c8d8e5}.layerTitle{font-size:20px;font-weight:750;letter-spacing:.7px}.layerSub{font-size:13px;fill:#60758a}.nodeTitle{font-size:17px;font-weight:700}.nodeBody{font-size:14px;fill:#51677c}.tiny{font-size:12px;fill:#60758a}.pill{font-size:12px;font-weight:700;letter-spacing:.3px}.metric{font-size:15px;font-weight:650}.note{font-size:13px}.ref{font-size:12px;fill:#73879a}.card{filter:url(#shadow)}.flow{fill:none;stroke:#47637a;stroke-width:2.2;marker-end:url(#arrow)}.control{fill:none;stroke:#087f8c;stroke-width:2.5;marker-end:url(#arrowTeal)}.softline{stroke:#dbe5ec;stroke-width:1.3}
+ </style>
+</defs>
+<rect width="2400" height="1680" fill="url(#bg)"/>
+<!-- masthead -->
+<rect x="0" y="0" width="2400" height="174" fill="url(#head)"/>
+<text x="78" y="43" class="eyebrow">SYSTEM ARCHITECTURE · IMPLEMENTED SCOPE</text>
+<text x="78" y="94" class="title">Quantum-Safe Semantic Communication</text>
+<text x="78" y="130" class="subtitle">for Deterministic Tactile Networks · B.Tech project · repository-grounded view</text>
+<rect x="1970" y="44" width="350" height="52" rx="26" fill="#234c68" stroke="#4b7088"/>
+<circle cx="2001" cy="70" r="6" fill="#78d2c7"/><text x="2020" y="76" font-size="14" font-weight="700" fill="#e8f3f5">PYTHON EXPERIMENTS</text>
+<text x="1970" y="129" font-size="13" fill="#a9c0d0">No end-to-end deployment claim</text>
+
+<!-- semantic lane -->
+<g data-lane="semantic">
+ <rect class="card" x="64" y="205" width="2272" height="400" rx="20" fill="#fff" stroke="#dce6ed"/>
+ <rect x="64" y="205" width="10" height="400" rx="5" fill="#087f8c"/>
+ <text x="98" y="248" class="layerTitle">01  SEMANTIC REPRESENTATION &amp; RETENTION</text>
+ <text x="98" y="273" class="layerSub">JIGSAWS kinematics → learned latent features → selectable retention → reconstruction-based quality evaluation</text>
+ <rect x="1988" y="225" width="310" height="30" rx="15" fill="#e8f5f4"/><text x="2143" y="245" text-anchor="middle" class="pill" fill="#087f8c">TRAIN / EVALUATE · PPO CONTROL</text>
+ <!-- arrows behind nodes -->
+ <path class="flow" d="M365 421H408"/><path class="flow" d="M680 421H723"/><path class="flow" d="M995 421H1038"/><path class="flow" d="M1310 421H1353"/><path class="flow" d="M1625 421H1668"/><path class="flow" d="M1940 421H1983"/>
+ <g class="card"><rect x="95" y="321" width="270" height="200" rx="14" fill="#f2f8fa" stroke="#b8d6dc"/><rect x="95" y="321" width="270" height="7" rx="4" fill="#3993a0"/>
+  <text x="119" y="363" class="nodeTitle">JIGSAWS data</text><text x="119" y="393" class="nodeBody">Robotic kinematic trajectories</text><text x="119" y="416" class="nodeBody">Numeric rows → normalized</text><text x="119" y="439" class="nodeBody">32-step windows · stride 16</text><text x="119" y="484" class="tiny">data_loader.py</text></g>
+ <g class="card"><rect x="410" y="321" width="270" height="200" rx="14" fill="#f2f8fa" stroke="#b8d6dc"/><rect x="410" y="321" width="270" height="7" rx="4" fill="#3993a0"/>
+  <text x="434" y="363" class="nodeTitle">Semantic encoder</text><text x="434" y="393" class="nodeBody">MLP maps input features</text><text x="434" y="416" class="nodeBody">76 → 128 → 128 → 16</text><text x="434" y="439" class="nodeBody">Latent semantic vector</text><text x="434" y="484" class="tiny">encoder.py · model_io.py</text></g>
+ <g class="card"><rect x="725" y="321" width="270" height="200" rx="14" fill="#eaf6f5" stroke="#90c9c8"/><rect x="725" y="321" width="270" height="7" rx="4" fill="#087f8c"/>
+  <text x="749" y="363" class="nodeTitle">Adaptive compressor</text><text x="749" y="393" class="nodeBody">Ranks latent dimensions by</text><text x="749" y="416" class="nodeBody">mean absolute activation</text><text x="749" y="439" class="nodeBody">Keeps the selected top-k</text><text x="749" y="484" class="tiny">compression.py</text></g>
+ <g class="card"><rect x="1040" y="321" width="270" height="200" rx="14" fill="#fff8e9" stroke="#e6cb8b"/><rect x="1040" y="321" width="270" height="7" rx="4" fill="#d89b27"/>
+  <text x="1064" y="363" class="nodeTitle">Modeled payload</text><text x="1064" y="393" class="nodeBody">Retained latent dimensions</text><text x="1064" y="416" class="nodeBody">4 / 8 / 12 / 16 of 16</text><text x="1064" y="439" class="nodeBody">Cost proxy = retained fraction</text><text x="1064" y="484" class="tiny">No serialized wire packet / crypto bytes</text></g>
+ <g class="card"><rect x="1355" y="321" width="270" height="200" rx="14" fill="#f2f8fa" stroke="#b8d6dc"/><rect x="1355" y="321" width="270" height="7" rx="4" fill="#3993a0"/>
+  <text x="1379" y="363" class="nodeTitle">Latent expansion</text><text x="1379" y="393" class="nodeBody">Place retained values back</text><text x="1379" y="416" class="nodeBody">into 16-D vector; zeros for</text><text x="1379" y="439" class="nodeBody">omitted dimensions</text><text x="1379" y="484" class="tiny">compression.py · decompress()</text></g>
+ <g class="card"><rect x="1670" y="321" width="270" height="200" rx="14" fill="#f2f8fa" stroke="#b8d6dc"/><rect x="1670" y="321" width="270" height="7" rx="4" fill="#3993a0"/>
+  <text x="1694" y="363" class="nodeTitle">Semantic decoder</text><text x="1694" y="393" class="nodeBody">MLP maps latent vector</text><text x="1694" y="416" class="nodeBody">16 → 128 → 128 → 76</text><text x="1694" y="439" class="nodeBody">Reconstructed kinematics</text><text x="1694" y="484" class="tiny">decoder.py</text></g>
+ <g class="card"><rect x="1985" y="321" width="270" height="200" rx="14" fill="#eef4fb" stroke="#b8c8e2"/><rect x="1985" y="321" width="270" height="7" rx="4" fill="#5576b8"/>
+  <text x="2009" y="363" class="nodeTitle">Reconstruction eval</text><text x="2009" y="393" class="nodeBody">Held-out JIGSAWS samples</text><text x="2009" y="416" class="nodeBody">MSE → quality = 1 / (1 + MSE)</text><text x="2009" y="439" class="nodeBody">Reward / policy metrics</text><text x="2009" y="484" class="tiny">environment.py · evaluate_semantic_rl.py</text></g>
+ <rect x="100" y="548" width="2150" height="34" rx="9" fill="#fff2df"/><text x="1175" y="570" text-anchor="middle" class="note" fill="#805517">Packet size is modeled as retained latent fraction in this semantic experiment; cryptographic overhead is excluded.</text>
+</g>
+
+<!-- policy lane -->
+<g data-lane="policy">
+ <rect class="card" x="64" y="630" width="1105" height="420" rx="20" fill="#fff" stroke="#dce6ed"/>
+ <rect x="64" y="630" width="10" height="420" rx="5" fill="#7357a5"/>
+ <text x="98" y="674" class="layerTitle">02  RULE-BASED ORCHESTRATION + PPO</text>
+ <text x="98" y="699" class="layerSub">Objective selection and action bias wrap a learned semantic-retention policy</text>
+ <path class="flow" d="M355 800H390"/><path class="flow" d="M685 800H720"/><path class="control" d="M865 855V892H1000V855"/>
+ <g class="card"><rect x="96" y="735" width="260" height="130" rx="13" fill="#f5f1fa" stroke="#c9b9df"/><text x="117" y="772" class="nodeTitle">Context signals</text><text x="117" y="800" class="nodeBody">Criticality · load · latency</text><text x="117" y="823" class="nodeBody">Security requirement field</text><text x="117" y="847" class="tiny">7-value env state</text></g>
+ <g class="card"><rect x="392" y="735" width="293" height="130" rx="13" fill="#f5f1fa" stroke="#c9b9df"/><text x="414" y="772" class="nodeTitle">Rule-based objective</text><text x="414" y="800" class="nodeBody">LATENCY_CRITICAL</text><text x="414" y="820" class="nodeBody">QUALITY_CRITICAL</text><text x="414" y="840" class="nodeBody">BANDWIDTH_EFFICIENT · BALANCED</text></g>
+ <g class="card"><rect x="722" y="735" width="190" height="130" rx="13" fill="#edf4ff" stroke="#b6cae8"/><text x="817" y="772" text-anchor="middle" class="nodeTitle">PPO policy</text><text x="817" y="800" text-anchor="middle" class="nodeBody">raw action 0–3</text><text x="817" y="823" text-anchor="middle" class="nodeBody">reward-weighted</text><text x="817" y="847" text-anchor="middle" class="tiny">rl/agent.py</text></g>
+ <g class="card"><rect x="932" y="735" width="205" height="130" rx="13" fill="#f1f8f5" stroke="#b0d7c5"/><text x="1034" y="772" text-anchor="middle" class="nodeTitle">Objective bias</text><text x="1034" y="800" text-anchor="middle" class="nodeBody">rules adjust action</text><text x="1034" y="823" text-anchor="middle" class="nodeBody">before compression</text><text x="1034" y="847" text-anchor="middle" class="tiny">communicator.py</text></g>
+ <text x="817" y="913" text-anchor="middle" class="tiny">During training, objective scales reward weights; during orchestrated evaluation, it biases raw PPO action.</text>
+ <rect x="96" y="941" width="1041" height="75" rx="13" fill="#f8fafc" stroke="#dbe5ec"/>
+ <text x="119" y="970" class="nodeTitle">Discrete retention actions</text>
+ <g><rect x="434" y="953" width="130" height="48" rx="12" fill="#e8f2fa"/><text x="499" y="983" text-anchor="middle" class="pill">25% · 4 / 16</text></g>
+ <g><rect x="578" y="953" width="130" height="48" rx="12" fill="#e8f2fa"/><text x="643" y="983" text-anchor="middle" class="pill">50% · 8 / 16</text></g>
+ <g><rect x="722" y="953" width="130" height="48" rx="12" fill="#e8f2fa"/><text x="787" y="983" text-anchor="middle" class="pill">75% · 12 / 16</text></g>
+ <g><rect x="866" y="953" width="130" height="48" rx="12" fill="#e8f2fa"/><text x="931" y="983" text-anchor="middle" class="pill">100% · 16 / 16</text></g>
+ <text x="1015" y="984" class="tiny">→ compressor</text>
+</g>
+
+<!-- network scheduling lane -->
+<g data-lane="network">
+ <rect class="card" x="1195" y="630" width="1141" height="420" rx="20" fill="#fff" stroke="#dce6ed"/>
+ <rect x="1195" y="630" width="10" height="420" rx="5" fill="#3474a5"/>
+ <text x="1229" y="674" class="layerTitle">03  DQN NETWORK SCHEDULING</text>
+ <text x="1229" y="699" class="layerSub">Independent Python workload experiment · no semantic-payload-to-scheduler integration in code</text>
+ <path class="flow" d="M1439 807H1460"/><path class="flow" d="M1660 807H1680"/><path class="flow" d="M1880 807H1900"/><path class="flow" d="M2110 807H2130"/>
+ <g class="card"><rect x="1225" y="742" width="214" height="130" rx="13" fill="#eef5fa" stroke="#b7cedf"/><text x="1246" y="778" class="nodeTitle">Traffic generation</text><text x="1246" y="806" class="nodeBody">Size · priority · deadline</text><text x="1246" y="829" class="nodeBody">Arrival time / workload</text><text x="1246" y="853" class="tiny">rl/traffic_generator.py</text></g>
+ <g class="card"><rect x="1462" y="742" width="198" height="130" rx="13" fill="#eef5fa" stroke="#b7cedf"/><text x="1482" y="778" class="nodeTitle">Arrival queue</text><text x="1482" y="806" class="nodeBody">Event admission</text><text x="1482" y="829" class="nodeBody">Queue-state features</text><text x="1482" y="853" class="tiny">network / rl env</text></g>
+ <g class="card"><rect x="1682" y="742" width="198" height="130" rx="13" fill="#edf4ff" stroke="#b6cae8"/><text x="1781" y="778" text-anchor="middle" class="nodeTitle">DQN scheduler</text><text x="1781" y="806" text-anchor="middle" class="nodeBody">Select waiting packet</text><text x="1781" y="829" text-anchor="middle" class="nodeBody">masked queue action</text><text x="1781" y="853" text-anchor="middle" class="tiny">rl/dqn_agent.py</text></g>
+ <g class="card"><rect x="1902" y="742" width="208" height="130" rx="13" fill="#eef5fa" stroke="#b7cedf"/><text x="1922" y="778" class="nodeTitle">Python simulation</text><text x="1922" y="806" class="nodeBody">Single link: transmit +</text><text x="1922" y="829" class="nodeBody">propagation delay</text><text x="1922" y="853" class="tiny">event_simulator.py</text></g>
+ <g class="card"><rect x="2132" y="742" width="174" height="130" rx="13" fill="#f1f8f5" stroke="#b0d7c5"/><text x="2219" y="778" text-anchor="middle" class="nodeTitle">Results</text><text x="2219" y="806" text-anchor="middle" class="nodeBody">latency · queue</text><text x="2219" y="829" text-anchor="middle" class="nodeBody">deadline met?</text><text x="2219" y="853" text-anchor="middle" class="tiny">analyzer.py</text></g>
+ <text x="1229" y="931" class="nodeBody">DQN environment also computes queueing delay, deadline misses, and reward each scheduling step.</text>
+ <text x="1229" y="963" class="tiny">NetworkSchedulingEnv shares simulation timing with EventDrivenSimulator; evaluated against Random / Priority / EDF.</text>
+</g>
+
+<!-- evaluation and scope -->
+<g data-lane="evaluation">
+ <rect class="card" x="64" y="1075" width="2272" height="455" rx="20" fill="#fff" stroke="#dce6ed"/>
+ <rect x="64" y="1075" width="10" height="455" rx="5" fill="#5576b8"/>
+ <text x="98" y="1119" class="layerTitle">04  EVALUATION, REPORTING &amp; IMPLEMENTATION BOUNDARY</text>
+ <text x="98" y="1144" class="layerSub">Semantic policy comparison and network-scheduler evaluation are distinct result paths.</text>
+ <path class="flow" d="M583 1255H618"/><path class="flow" d="M1669 1255H1704"/>
+ <g class="card"><rect x="96" y="1177" width="487" height="240" rx="14" fill="#f5f8fc" stroke="#ccd8e6"/><text x="120" y="1214" class="nodeTitle">Semantic retention evaluation</text>
+   <text x="120" y="1244" class="nodeBody">Fixed baselines: 25% · 50% · 75% · 100%</text><text x="120" y="1267" class="nodeBody">PPO raw action vs orchestrated PPO</text><text x="120" y="1290" class="nodeBody">Same held-out split · deterministic states</text><text x="120" y="1325" class="tiny">evaluate_semantic_rl.py</text><text x="120" y="1354" class="tiny">Reported: reconstruction MSE · semantic quality ·</text><text x="120" y="1376" class="tiny">retained fraction / communication-cost proxy · estimated latency</text></g>
+ <g class="card"><rect x="620" y="1177" width="485" height="240" rx="14" fill="#f5f8fc" stroke="#ccd8e6"/><text x="644" y="1214" class="nodeTitle">Network scheduler evaluation</text>
+   <text x="644" y="1244" class="nodeBody">Random · Priority · EDF · DQN</text><text x="644" y="1267" class="nodeBody">Identical packet workloads per episode</text><text x="644" y="1290" class="nodeBody">Latency · queueing · deadline misses · jitter</text><text x="644" y="1325" class="tiny">rl/evaluate.py · evaluation/metrics.py</text><text x="644" y="1354" class="tiny">Figures: DQN training curves &amp; scheduler comparison</text><text x="644" y="1376" class="tiny">rl/plot_results.py</text></g>
+ <g class="card"><rect x="1142" y="1177" width="526" height="240" rx="14" fill="#fff7e9" stroke="#e7cf9a"/><text x="1166" y="1214" class="nodeTitle">Uncertainty analysis</text>
+   <rect x="1166" y="1230" width="134" height="26" rx="13" fill="#f4e3bd"/><text x="1233" y="1248" text-anchor="middle" class="pill" fill="#795617">NOT IMPLEMENTED</text><text x="1166" y="1290" class="nodeBody">Scripts report means over held-out samples or episodes.</text><text x="1166" y="1315" class="nodeBody">No confidence intervals, bootstrap, or variance</text><text x="1166" y="1340" class="nodeBody">analysis is present in the current evaluation code.</text><text x="1166" y="1381" class="tiny">No uncertainty bars are implied in this architecture.</text></g>
+ <g class="card"><rect x="1706" y="1177" width="598" height="240" rx="14" fill="#fbf0ef" stroke="#e3bfba"/><text x="1730" y="1214" class="nodeTitle">Outside current implementation scope</text>
+   <rect x="1730" y="1233" width="258" height="40" rx="10" fill="#f8e4e1" stroke="#e6c3bd"/><text x="1747" y="1259" class="pill" fill="#994d43">NS-3 VALIDATION</text><text x="2000" y="1259" class="tiny">Not implemented</text>
+   <rect x="1730" y="1287" width="350" height="40" rx="10" fill="#f8e4e1" stroke="#e6c3bd"/><text x="1747" y="1313" class="pill" fill="#994d43">MEASURED PQC OVERHEAD</text><text x="2093" y="1313" class="tiny">Not integrated</text>
+   <text x="1730" y="1371" class="tiny">Cryptography modules exist separately; no measured PQC</text><text x="1730" y="1392" class="tiny">overhead is included in modeled payload or network metrics.</text></g>
+ <line x1="96" y1="1443" x2="2304" y2="1443" class="softline"/>
+ <text x="100" y="1481" class="tiny" font-weight="700">LEGEND</text>
+ <path d="M183 1476H245" class="flow"/><text x="258" y="1481" class="tiny">implemented data / control flow</text>
+ <path d="M498 1476H560" class="control"/><text x="573" y="1481" class="tiny">policy control into retention path</text>
+ <rect x="830" y="1462" width="22" height="22" rx="5" fill="#fff2df" stroke="#e6cb8b"/><text x="862" y="1481" class="tiny">modeled quantity / explicit assumption</text>
+ <rect x="1190" y="1462" width="22" height="22" rx="5" fill="#f8e4e1" stroke="#e6c3bd"/><text x="1222" y="1481" class="tiny">outside implementation scope</text>
+ <rect x="1530" y="1462" width="22" height="22" rx="5" fill="#f4e3bd"/><text x="1562" y="1481" class="tiny">not implemented in evaluation</text>
+ <text x="2300" y="1502" text-anchor="end" class="ref">Sources: semantic/ · orchestration/ · rl/ · network/simulation/ · evaluation/</text>
+</g>
+</svg>

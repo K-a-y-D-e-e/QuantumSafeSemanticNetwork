@@ -1,0 +1,47 @@
+{
+  "eval_seed": 999,
+  "num_episodes": 100,
+  "model_path": "rl/checkpoints/dqn_best.pt",
+  "results": {
+    "Random": {
+      "avg_latency_us": 5557.3216,
+      "min_latency_us": 1109.506,
+      "max_latency_us": 10265.462,
+      "avg_queueing_us": 4484.6608,
+      "jitter_us": 1019.7207,
+      "deadline_misses": 3.08,
+      "deadline_miss_rate": 0.308,
+      "completed_flows": 10.0
+    },
+    "Priority": {
+      "avg_latency_us": 5556.8856,
+      "min_latency_us": 1113.86,
+      "max_latency_us": 10042.504,
+      "avg_queueing_us": 4484.2248,
+      "jitter_us": 992.8285,
+      "deadline_misses": 3.04,
+      "deadline_miss_rate": 0.304,
+      "completed_flows": 10.0
+    },
+    "EDF": {
+      "avg_latency_us": 5506.5568,
+      "min_latency_us": 1107.22,
+      "max_latency_us": 10291.484,
+      "avg_queueing_us": 4433.896,
+      "jitter_us": 1023.3045,
+      "deadline_misses": 1.26,
+      "deadline_miss_rate": 0.126,
+      "completed_flows": 10.0
+    },
+    "DQN": {
+      "avg_latency_us": 5299.0288,
+      "min_latency_us": 1110.076,
+      "max_latency_us": 10246.388,
+      "avg_queueing_us": 4226.368,
+      "jitter_us": 1018.3711,
+      "deadline_misses": 2.36,
+      "deadline_miss_rate": 0.236,
+      "completed_flows": 10.0
+    }
+  }
+}
