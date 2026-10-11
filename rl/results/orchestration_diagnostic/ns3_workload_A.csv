@@ -1,0 +1,11 @@
+config,label,episode,avg_latency_us,p95_latency_us,deadline_miss_rate,deadline_satisfaction_rate,completed_flows,avg_payload_bytes,sem_quality,sem_mse,note
+A,Conv-50%+EDF,1,4666.099999999999,8731.21,0.1,0.9,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,2,4862.999999999999,8625.859999999999,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,3,4824.2,8450.71,0.4,0.6,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,4,4868.4,8862.259999999998,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,5,4875.9,8644.709999999997,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,6,4781.199999999999,8480.409999999998,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,7,4717.299999999999,8601.46,0.1,0.9,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,8,4909.9,8500.359999999999,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,9,4734.699999999999,8470.31,0.2,0.8,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement
+A,Conv-50%+EDF,10,4963.0,8892.21,0.0,1.0,10,1064,0.719423,0.425384,Python simulation result - NOT NS-3 measurement

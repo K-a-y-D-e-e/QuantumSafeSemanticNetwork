@@ -1,0 +1,11 @@
+config,label,episode,avg_latency_us,p95_latency_us,deadline_miss_rate,deadline_satisfaction_rate,completed_flows,avg_payload_bytes,sem_quality,sem_mse,note
+B,PPO+DQN+Orch,1,4335.859999999999,8067.649999999997,0.2,0.8,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,2,3170.5200000000004,6312.899999999998,0.0,1.0,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,3,3709.6399999999994,6450.699999999997,0.2,0.8,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,4,4579.4400000000005,8528.37,0.3,0.7,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,5,4834.619999999999,9163.449999999997,0.1,0.9,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,6,3460.2399999999993,6697.809999999998,0.1,0.9,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,7,4676.0199999999995,8205.519999999999,0.3,0.7,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,8,3547.66,5738.469999999998,0.0,1.0,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,9,3289.9,5861.349999999997,0.3,0.7,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
+B,PPO+DQN+Orch,10,4921.719999999999,7461.019999999998,0.0,1.0,10,950,0.677062,0.576854,Python simulation result - NOT NS-3 measurement
