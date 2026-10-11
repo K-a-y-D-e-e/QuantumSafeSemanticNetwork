@@ -1,0 +1,31 @@
+{
+  "eval_seed": 999,
+  "sem_seed": 42,
+  "num_episodes": 100,
+  "num_seeds": 3,
+  "total_episodes_per_config": 300,
+  "num_eval_samples": 256,
+  "flows_per_episode": 10,
+  "ppo_checkpoint": "rl/checkpoints/ppo_semantic_adaptive.zip",
+  "dqn_checkpoint": "rl/checkpoints/dqn_final.pt",
+  "encoder_path": "semantic_encoder.pth",
+  "decoder_path": "semantic_decoder.pth",
+  "link_bandwidth_mbps": 10,
+  "link_propagation_delay_us": 100,
+  "action_bytes": {
+    "0": 548,
+    "1": 1064,
+    "2": 1580,
+    "3": 2096
+  },
+  "configurations": {
+    "A": "Conv-50%+EDF",
+    "B": "PPO+DQN+Orch",
+    "C": "PPO+DQN (no orch)",
+    "D": "Fixed-25%+EDF",
+    "E": "Fixed-75%+EDF",
+    "F": "PPO+EDF",
+    "G": "PPO+Orch+EDF"
+  },
+  "note": "Semantic-layer results (MSE/quality) come from encoder-decoder inference on JIGSAWS kinematics. Scheduling-layer results (latency/deadline) come from Python EventDrivenSimulator / NetworkSchedulingEnv. These are Python simulation results, NOT NS-3 measurements. NS-3 workload exports are in ns3_workload_*.csv."
+}
