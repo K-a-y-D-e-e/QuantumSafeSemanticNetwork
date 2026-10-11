@@ -39,7 +39,7 @@ class AIOrchestrationAgent:
             "criticality": 0.6,
         },
         "BALANCED": {
-            "quality": 1.0,
+            "quality": 2.5,
             "latency": 1.0,
             "bandwidth": 1.0,
             "deadline": 1.0,

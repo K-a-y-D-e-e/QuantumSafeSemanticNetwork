@@ -110,6 +110,57 @@ def test_semantic_env_reconstruction_mode(semantic_models, kinematics_sample):
     assert math.isfinite(reward)
 
 
+def test_reconstruction_mode_terminates_at_configured_horizon(
+    semantic_models, kinematics_sample
+):
+    encoder, decoder, device = semantic_models
+    env = SemanticCompressionEnv(
+        encoder=encoder,
+        decoder=decoder,
+        compressor=AdaptiveSemanticCompressor(latent_dim=DEFAULT_LATENT_DIM),
+        kinematics_samples=kinematics_sample,
+        orchestrator=AIOrchestrationAgent(),
+        device=device,
+        use_reconstruction_reward=True,
+        episode_horizon=3,
+    )
+    env.reset(seed=11)
+
+    for step in range(3):
+        _, reward, terminated, truncated, info = env.step(1)
+        assert math.isfinite(reward)
+        assert truncated is False
+        assert terminated is (step == 2)
+        assert info["episode_step"] == step + 1
+
+
+def test_reconstruction_mode_advances_sample_and_network_scenario(
+    semantic_models, kinematics_sample
+):
+    encoder, decoder, device = semantic_models
+    samples = list(kinematics_sample)
+    if len(samples) < 2:
+        samples = samples * 2
+    env = SemanticCompressionEnv(
+        encoder=encoder,
+        decoder=decoder,
+        compressor=AdaptiveSemanticCompressor(latent_dim=DEFAULT_LATENT_DIM),
+        kinematics_samples=samples,
+        orchestrator=AIOrchestrationAgent(),
+        device=device,
+        use_reconstruction_reward=True,
+        episode_horizon=3,
+    )
+    initial_state, initial_info = env.reset(seed=11)
+    initial_sample = initial_info["sample_index"]
+
+    next_state, _, terminated, _, info = env.step(1)
+    assert terminated is False
+    assert info["next_sample_index"] == (initial_sample + 1) % len(samples)
+    assert not np.array_equal(next_state, initial_state)
+    assert info["next_objective"] in AIOrchestrationAgent.OBJECTIVES
+
+
 def test_orchestration_reward_weights_change_by_objective():
     agent = AIOrchestrationAgent()
 

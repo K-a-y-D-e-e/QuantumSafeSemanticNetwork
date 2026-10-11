@@ -38,6 +38,16 @@ ACTION_TO_COMPRESSION = {
     3: 1.00,
 }
 
+# Explicit, reproducible scenarios for sequential reconstruction-mode training.
+# State order: criticality, bandwidth, load, latency, packet loss, deadline,
+# semantic quality. Values are normalized to [0, 1].
+SEMANTIC_NETWORK_SCENARIOS = (
+    (0.50, 0.80, 0.30, 0.25, 0.01, 0.60, 0.70),  # balanced
+    (0.95, 0.80, 0.40, 0.30, 0.02, 0.80, 0.75),  # quality critical
+    (0.90, 0.55, 0.60, 0.85, 0.05, 0.65, 0.70),  # latency critical
+    (0.50, 0.45, 0.85, 0.55, 0.08, 0.70, 0.60),  # bandwidth efficient
+)
+
 
 # =============================================================================
 # ─── SemanticCompressionEnv (original — preserved unchanged) ─────────────────
@@ -84,8 +94,13 @@ class SemanticCompressionEnv(gym.Env):
         use_reconstruction_reward: bool = False,
         default_objective: str = "BALANCED",
         invalid_action_penalty: float = -0.25,
+        episode_horizon: int = 10,
+	latency_compression_weight  : float = 0.35,
     ):
         super().__init__()
+
+        if int(episode_horizon) < 1:
+            raise ValueError("episode_horizon must be at least 1")
 
         self.observation_space = spaces.Box(
             low=0.0,
@@ -104,10 +119,19 @@ class SemanticCompressionEnv(gym.Env):
         self.use_reconstruction_reward = use_reconstruction_reward
         self.default_objective = default_objective
         self.invalid_action_penalty = invalid_action_penalty
+        self.episode_horizon = int(episode_horizon)
+        if not 0.0 <= latency_compression_weight <= 1.0:
+            raise ValueError(
+                "latency_compression_weight must be between 0 and 1"
+            )
+        self.latency_compression_weight = float(
+            latency_compression_weight
+        )
 
         self.state = None
         self._rng = np.random.default_rng()
         self._sample_index = 0
+        self._episode_step = 0
         self._current_objective = default_objective
         self._last_info: Dict[str, Any] = {}
 
@@ -142,6 +166,7 @@ class SemanticCompressionEnv(gym.Env):
             self._rng = np.random.default_rng(seed)
 
         options = options or {}
+        self._episode_step = 0
 
         if self.use_reconstruction_reward:
             if "state_vector" in options:
@@ -247,8 +272,31 @@ class SemanticCompressionEnv(gym.Env):
         info["compression"] = compression
         info["objective"] = self._current_objective
 
-        terminated = False
-        truncated = False
+        if self.use_reconstruction_reward:
+            self._episode_step += 1
+            terminated = self._episode_step >= self.episode_horizon
+            truncated = False
+            info["episode_step"] = self._episode_step
+            info["episode_horizon"] = self.episode_horizon
+
+            if not terminated:
+                # Advance the sample and follow a reproducible scenario sequence.
+                self._sample_index = (self._sample_index + 1) % len(
+                    self.kinematics_samples
+                )
+                scenario_index = self._episode_step % len(SEMANTIC_NETWORK_SCENARIOS)
+                self.state = np.asarray(
+                    SEMANTIC_NETWORK_SCENARIOS[scenario_index], dtype=np.float32
+                )
+                self._current_objective = self._decide_objective_from_state(
+                    self.state
+                )
+                info["next_sample_index"] = self._sample_index
+                info["next_objective"] = self._current_objective
+        else:
+            # Preserve the original analytic-mode behaviour for compatibility.
+            terminated = False
+            truncated = False
 
         self._last_info = info
         return self.state.copy(), float(reward), terminated, truncated, info
@@ -360,7 +408,7 @@ class SemanticCompressionEnv(gym.Env):
         estimated_latency = float(
             np.clip(
                 latency
-                + 0.35 * bandwidth_cost
+                + self.latency_compression_weight * bandwidth_cost
                 + 0.25 * network_load
                 + 0.10 * packet_loss
                 - 0.10 * bandwidth,
